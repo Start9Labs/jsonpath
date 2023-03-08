@@ -5,13 +5,13 @@ extern crate serde_json;
 extern crate wasm_bindgen;
 
 use cfg_if::cfg_if;
+use imbl_value::Value;
 #[allow(deprecated)]
 use jsonpath::Selector as _Selector;
 #[allow(deprecated)]
 use jsonpath::SelectorMut as _SelectorMut;
 #[allow(deprecated)]
 use jsonpath::{JsonPathError, Parser};
-use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
 cfg_if! {
@@ -43,8 +43,8 @@ macro_rules! console_error {
 }
 
 fn into_serde_json<D>(js_value: &JsValue) -> Result<D, String>
-    where
-        D: for<'a> serde::de::Deserialize<'a>,
+where
+    D: for<'a> serde::de::Deserialize<'a>,
 {
     if js_value.is_string() {
         match serde_json::from_str(js_value.as_string().unwrap().as_str()) {
@@ -85,7 +85,7 @@ fn replace_fun(v: Value, fun: &js_sys::Function) -> Option<Value> {
 #[wasm_bindgen]
 pub fn compile(path: &str) -> JsValue {
     #[allow(deprecated)]
-        let node = Parser::compile(path);
+    let node = Parser::compile(path);
 
     if let Err(e) = &node {
         return JsValue::from_str(&format!("{:?}", JsonPathError::Path(e.clone())));
@@ -98,7 +98,7 @@ pub fn compile(path: &str) -> JsValue {
         };
 
         #[allow(deprecated)]
-            let mut selector = _Selector::new();
+        let mut selector = _Selector::new();
 
         match &node {
             Ok(node) => selector.compiled_path(node),
@@ -129,21 +129,21 @@ pub fn selector(js_value: JsValue) -> JsValue {
     #[allow(deprecated)]
     let cb = Closure::wrap(
         Box::new(move |path: String| match Parser::compile(path.as_str()) {
-                Ok(node) => {
-                    let mut selector = _Selector::new();
-                    let _ = selector.compiled_path(&node);
-                    match selector.value(&json).select() {
-                        Ok(ret) => match JsValue::from_serde(&ret) {
-                            Ok(ret) => ret,
-                            Err(e) => {
-                                JsValue::from_str(&format!("{:?}", JsonPathError::Serde(e.to_string())))
-                            }
-                        },
-                        Err(e) => JsValue::from_str(&format!("{:?}", e)),
-                    }
+            Ok(node) => {
+                let mut selector = _Selector::new();
+                let _ = selector.compiled_path(&node);
+                match selector.value(&json).select() {
+                    Ok(ret) => match JsValue::from_serde(&ret) {
+                        Ok(ret) => ret,
+                        Err(e) => {
+                            JsValue::from_str(&format!("{:?}", JsonPathError::Serde(e.to_string())))
+                        }
+                    },
+                    Err(e) => JsValue::from_str(&format!("{:?}", e)),
                 }
-                Err(e) => JsValue::from_str(&format!("{:?}", JsonPathError::Path(e))),
-            }) as Box<dyn Fn(String) -> JsValue>,
+            }
+            Err(e) => JsValue::from_str(&format!("{:?}", JsonPathError::Path(e))),
+        }) as Box<dyn Fn(String) -> JsValue>,
     );
 
     let ret = cb.as_ref().clone();

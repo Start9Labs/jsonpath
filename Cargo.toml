@@ -20,6 +20,7 @@ travis-ci = { repository = "freestrings/jsonpath", branch = "master" }
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
+imbl-value = { git = "https://github.com/Start9Labs/imbl-value.git" }
 
 [dev-dependencies]
 env_logger = "0.8"

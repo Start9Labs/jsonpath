@@ -12,7 +12,7 @@ extern crate serde_json;
 extern crate wasm_bindgen;
 extern crate wasm_bindgen_test;
 
-use serde_json::Value;
+use imbl_value::Value;
 use wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_test::*;

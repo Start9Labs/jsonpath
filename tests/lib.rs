@@ -1,10 +1,12 @@
 extern crate jsonpath_lib as jsonpath;
 extern crate serde;
-#[macro_use]
 extern crate serde_json;
+#[macro_use]
+extern crate imbl_value;
 
+use imbl_value::imbl::{vector, Vector};
+use imbl_value::Value;
 use serde::Deserialize;
-use serde_json::Value;
 
 use common::{compare_result, read_contents, read_json, setup};
 use jsonpath::JsonPathError;
@@ -54,7 +56,7 @@ fn selector() {
 
     fn select<'a, F>(selector: &mut F, path: &'a str, target: Value)
     where
-        F: FnMut(&'a str) -> Result<Vec<&Value>, JsonPathError>,
+        F: FnMut(&'a str) -> Result<Vector<&Value>, JsonPathError>,
     {
         let json = selector(path).unwrap();
         compare_result(json, target);
@@ -83,7 +85,7 @@ fn selector() {
 
 #[test]
 fn selector_as() {
-    #[derive(Deserialize, PartialEq, Debug)]
+    #[derive(Clone, Deserialize, PartialEq, Debug)]
     struct Friend {
         id: u8,
         name: Option<String>,
@@ -163,7 +165,7 @@ fn test_to_struct() {
     struct Person {
         name: String,
         age: u8,
-        phones: Vec<String>,
+        phones: Vector<String>,
     }
 
     let ret: Vec<Person> = jsonpath::select_as(
@@ -187,7 +189,7 @@ fn test_to_struct() {
     let person = Person {
         name: "Doe John".to_string(),
         age: 44,
-        phones: vec!["+44 1234567".to_string(), "+44 2345678".to_string()],
+        phones: vector!["+44 1234567".to_string(), "+44 2345678".to_string()],
     };
 
     assert_eq!(vec![person], ret);

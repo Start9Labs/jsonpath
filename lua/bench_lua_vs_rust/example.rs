@@ -4,7 +4,7 @@ extern crate serde_json;
 
 use std::io::Read;
 
-use serde_json::Value;
+use imbl_value::Value;
 
 fn read_json(path: &str) -> String {
     let mut f = std::fs::File::open(path).unwrap();
@@ -27,8 +27,12 @@ fn get_path() -> &'static str {
 }
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    let iter = if args.len() < 2 { 5000_usize } else { args[1].as_str().parse::<usize>().unwrap() };
+    let args: Vector<String> = std::env::args().collect();
+    let iter = if args.len() < 2 {
+        5000_usize
+    } else {
+        args[1].as_str().parse::<usize>().unwrap()
+    };
 
     println!("rust iter - {}", iter);
 
@@ -41,6 +45,6 @@ fn main() {
         if r.is_err() {
             panic!();
         }
-//        println!("{:?}", serde_json::to_string(&r.expect("")).unwrap());
+        //        println!("{:?}", serde_json::to_string(&r.expect("")).unwrap());
     }
 }

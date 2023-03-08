@@ -1,10 +1,12 @@
 extern crate env_logger;
+extern crate imbl_value;
 extern crate jsonpath_lib as jsonpath;
 extern crate serde_json;
 
 use std::io::Read;
 
-use serde_json::Value;
+use imbl_value::imbl::Vector;
+use imbl_value::Value;
 
 use self::jsonpath::{JsonSelector, PathParser};
 
@@ -33,7 +35,13 @@ pub fn read_contents(path: &str) -> String {
 pub fn select_and_then_compare(path: &str, json: Value, target: Value) {
     let parser = PathParser::compile(path).unwrap();
     let mut selector = JsonSelector::new(parser);
-    let result = selector.value(&json).select_as::<Value>().unwrap();
+    let result: Vector<_> = selector
+        .value(&json)
+        .select()
+        .unwrap()
+        .into_iter()
+        .cloned()
+        .collect();
     assert_eq!(
         result,
         match target {
@@ -46,7 +54,7 @@ pub fn select_and_then_compare(path: &str, json: Value, target: Value) {
 }
 
 #[allow(dead_code)]
-pub fn compare_result(result: Vec<&Value>, target: Value) {
-    let result = serde_json::to_value(result).unwrap();
+pub fn compare_result(result: Vector<&Value>, target: Value) {
+    let result = imbl_value::to_value(&result).unwrap();
     assert_eq!(result, target);
 }

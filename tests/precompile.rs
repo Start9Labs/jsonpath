@@ -1,10 +1,14 @@
 #[macro_use]
-extern crate serde_json;
+extern crate imbl_value;
 extern crate jsonpath_lib;
+extern crate serde_json;
 
-use common::{setup};
+use std::sync::Arc;
+
+use common::setup;
+use imbl_value::imbl::vector;
+use imbl_value::Value;
 use jsonpath_lib::PathCompiled;
-use serde_json::Value;
 
 mod common;
 
@@ -27,8 +31,9 @@ fn precompile_test() {
     // re-use
 
     //let result = compiled(&json).unwrap();
-    assert_eq!(compiled.select(&json).unwrap().clone(), vec![&Value::String("baz".into())]);
-    assert_eq!(compiled.select(&json).unwrap().clone(), vec![&Value::String("baz".into())]);
+    let baz = Value::String(Arc::new("baz".into()));
+    assert_eq!(compiled.select(&json).unwrap().clone(), vector![&baz]);
+    assert_eq!(compiled.select(&json).unwrap().clone(), vector![&baz]);
 }
 
 #[test]

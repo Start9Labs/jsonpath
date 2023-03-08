@@ -1,4 +1,5 @@
-use serde_json::Value;
+use imbl_value::imbl::Vector;
+use imbl_value::Value;
 
 pub trait Cmp {
     fn cmp_bool(&self, v1: bool, v2: bool) -> bool;
@@ -7,7 +8,7 @@ pub trait Cmp {
 
     fn cmp_string(&self, v1: &str, v2: &str) -> bool;
 
-    fn cmp_json<'a>(&self, v1: &[&'a Value], v2: &[&'a Value]) -> Vec<&'a Value>;
+    fn cmp_json<'a>(&self, v1: &Vector<&'a Value>, v2: &Vector<&'a Value>) -> Vector<&'a Value>;
 
     fn default(&self) -> bool {
         false
@@ -29,11 +30,11 @@ impl Cmp for CmpEq {
         v1 == v2
     }
 
-    fn cmp_json<'a>(&self, v1: &[&'a Value], v2: &[&'a Value]) -> Vec<&'a Value> {
-        v1.iter().fold(Vec::new(), |acc, a| {
+    fn cmp_json<'a>(&self, v1: &Vector<&'a Value>, v2: &Vector<&'a Value>) -> Vector<&'a Value> {
+        v1.iter().fold(Vector::new(), |acc, a| {
             v2.iter().fold(acc, |mut acc, b| {
                 if std::ptr::eq(*a, *b) {
-                    acc.push(*a);
+                    acc.push_back(*a);
                 }
                 acc
             })
@@ -56,8 +57,8 @@ impl Cmp for CmpNe {
         v1 != v2
     }
 
-    fn cmp_json<'a>(&self, v1: &[&'a Value], v2: &[&'a Value]) -> Vec<&'a Value> {
-        let mut ret = v1.to_vec();
+    fn cmp_json<'a>(&self, v1: &Vector<&'a Value>, v2: &Vector<&'a Value>) -> Vector<&'a Value> {
+        let mut ret = v1.clone();
         for v in v2 {
             for i in 0..ret.len() {
                 if std::ptr::eq(*v, &*ret[i]) {
@@ -89,8 +90,8 @@ impl Cmp for CmpGt {
         v1 > v2
     }
 
-    fn cmp_json<'a>(&self, _: &[&'a Value], _: &[&'a Value]) -> Vec<&'a Value> {
-        Vec::new()
+    fn cmp_json<'a>(&self, _: &Vector<&'a Value>, _: &Vector<&'a Value>) -> Vector<&'a Value> {
+        Vector::new()
     }
 }
 
@@ -109,8 +110,8 @@ impl Cmp for CmpGe {
         v1 >= v2
     }
 
-    fn cmp_json<'a>(&self, _: &[&'a Value], _: &[&'a Value]) -> Vec<&'a Value> {
-        Vec::new()
+    fn cmp_json<'a>(&self, _: &Vector<&'a Value>, _: &Vector<&'a Value>) -> Vector<&'a Value> {
+        Vector::new()
     }
 }
 
@@ -129,8 +130,8 @@ impl Cmp for CmpLt {
         v1 < v2
     }
 
-    fn cmp_json<'a>(&self, _: &[&'a Value], _: &[&'a Value]) -> Vec<&'a Value> {
-        Vec::new()
+    fn cmp_json<'a>(&self, _: &Vector<&'a Value>, _: &Vector<&'a Value>) -> Vector<&'a Value> {
+        Vector::new()
     }
 }
 
@@ -149,8 +150,8 @@ impl Cmp for CmpLe {
         v1 <= v2
     }
 
-    fn cmp_json<'a>(&self, _: &[&'a Value], _: &[&'a Value]) -> Vec<&'a Value> {
-        Vec::new()
+    fn cmp_json<'a>(&self, _: &Vector<&'a Value>, _: &Vector<&'a Value>) -> Vector<&'a Value> {
+        Vector::new()
     }
 }
 
@@ -169,7 +170,7 @@ impl Cmp for CmpAnd {
         !v1.is_empty() && !v2.is_empty()
     }
 
-    fn cmp_json<'a>(&self, v1: &[&'a Value], v2: &[&'a Value]) -> Vec<&'a Value> {
+    fn cmp_json<'a>(&self, v1: &Vector<&'a Value>, v2: &Vector<&'a Value>) -> Vector<&'a Value> {
         CmpEq.cmp_json(v1, v2)
     }
 }
@@ -189,8 +190,8 @@ impl Cmp for CmpOr {
         !v1.is_empty() || !v2.is_empty()
     }
 
-    fn cmp_json<'a>(&self, v1: &[&'a Value], v2: &[&'a Value]) -> Vec<&'a Value> {
-        v2.iter().fold(v1.to_vec(), |mut acc, v| {
+    fn cmp_json<'a>(&self, v1: &Vector<&'a Value>, v2: &Vector<&'a Value>) -> Vector<&'a Value> {
+        v2.iter().fold(v1.clone(), |mut acc, v| {
             let mut contains = false;
 
             for ptr in v1.iter().map(|v| *v as *const Value) {
@@ -201,7 +202,7 @@ impl Cmp for CmpOr {
             }
 
             if !contains {
-                acc.push(v);
+                acc.push_back(v);
             }
 
             acc
@@ -209,11 +210,13 @@ impl Cmp for CmpOr {
     }
 }
 
-
 #[cfg(test)]
 mod cmp_inner_tests {
-    use serde_json::Value;
+    use std::sync::Arc;
 
+    use imbl_value::Value;
+
+    use imbl_value::imbl::vector;
     use selector::cmp::*;
 
     #[test]
@@ -327,43 +330,43 @@ mod cmp_inner_tests {
     #[test]
     fn cmp_json() {
         let v1 = Value::Bool(true);
-        let v2 = Value::String("1".to_string());
-        let left = [&v1, &v2];
-        let right = [&v1, &v2];
-        let empty: Vec<&Value> = Vec::new();
+        let v2 = Value::String(Arc::new("1".to_string()));
+        let left = vector![&v1, &v2];
+        let right = vector![&v1, &v2];
+        let empty: Vector<&Value> = Vector::new();
 
-        assert_eq!(CmpEq.cmp_json(&left, &right), left.to_vec());
+        assert_eq!(CmpEq.cmp_json(&left, &right), left.clone());
         assert_eq!(CmpNe.cmp_json(&left, &right), empty);
         assert_eq!(CmpGt.cmp_json(&left, &right), empty);
         assert_eq!(CmpGe.cmp_json(&left, &right), empty);
         assert_eq!(CmpLt.cmp_json(&left, &right), empty);
         assert_eq!(CmpLe.cmp_json(&left, &right), empty);
-        assert_eq!(CmpAnd.cmp_json(&left, &right), left.to_vec());
-        assert_eq!(CmpOr.cmp_json(&left, &right), left.to_vec());
+        assert_eq!(CmpAnd.cmp_json(&left, &right), left.clone());
+        assert_eq!(CmpOr.cmp_json(&left, &right), left.clone());
 
         assert_eq!(
-            CmpEq.cmp_json(&[&Value::Bool(true)], &[&Value::Bool(true)]),
-            vec![&Value::Bool(true)]
+            CmpEq.cmp_json(&vector![&Value::Bool(true)], &vector![&Value::Bool(true)]),
+            vector![&Value::Bool(true)]
         );
         assert_eq!(
-            CmpEq.cmp_json(&[&Value::Bool(true)], &[&Value::Bool(false)]),
+            CmpEq.cmp_json(&vector![&Value::Bool(true)], &vector![&Value::Bool(false)]),
             empty
         );
         assert_eq!(
-            CmpNe.cmp_json(&[&Value::Bool(true)], &[&Value::Bool(true)]),
+            CmpNe.cmp_json(&vector![&Value::Bool(true)], &vector![&Value::Bool(true)]),
             empty
         );
         assert_eq!(
-            CmpNe.cmp_json(&[&Value::Bool(false)], &[&Value::Bool(true)]),
-            vec![&Value::Bool(false)]
+            CmpNe.cmp_json(&vector![&Value::Bool(false)], &vector![&Value::Bool(true)]),
+            vector![&Value::Bool(false)]
         );
         assert_eq!(
-            CmpAnd.cmp_json(&[&Value::Bool(true)], &[&Value::Bool(true)]),
-            vec![&Value::Bool(true)]
+            CmpAnd.cmp_json(&vector![&Value::Bool(true)], &vector![&Value::Bool(true)]),
+            vector![&Value::Bool(true)]
         );
         assert_eq!(
-            CmpOr.cmp_json(&[&Value::Bool(true)], &[&Value::Bool(false)]),
-            vec![&Value::Bool(true), &Value::Bool(false)]
+            CmpOr.cmp_json(&vector![&Value::Bool(true)], &vector![&Value::Bool(false)]),
+            vector![&Value::Bool(true), &Value::Bool(false)]
         );
     }
 }

@@ -1,13 +1,20 @@
-use serde_json::{Number, Value};
+use std::sync::Arc;
+
+use imbl_value::imbl::Vector;
+use imbl_value::{Number, Value};
 use select::cmp::*;
-use select::{FilterKey, to_f64};
+use select::{to_f64, FilterKey};
 
 #[derive(Debug, PartialEq)]
 pub(super) enum ExprTerm<'a> {
-    String(String),
+    String(Arc<String>),
     Number(Number),
     Bool(bool),
-    Json(Option<Vec<&'a Value>>, Option<FilterKey>, Vec<&'a Value>),
+    Json(
+        Option<Vector<&'a Value>>,
+        Option<FilterKey>,
+        Vector<&'a Value>,
+    ),
 }
 
 impl<'a> ExprTerm<'a> {
@@ -34,14 +41,14 @@ impl<'a> ExprTerm<'a> {
                 _ => ExprTerm::Bool(cmp_fn.default()),
             },
             ExprTerm::Json(rel, fk1, vec1) => {
-                let ret: Vec<&Value> = match &other {
+                let ret: Vector<&Value> = match &other {
                     ExprTerm::String(s2) => vec1
                         .iter()
                         .filter(|v1| match v1 {
                             Value::String(s1) => cmp_fn.cmp_string(s1, s2),
                             Value::Object(map1) => {
                                 if let Some(FilterKey::String(k)) = fk1 {
-                                    if let Some(Value::String(s1)) = map1.get(k) {
+                                    if let Some(Value::String(s1)) = map1.get(k.as_str()) {
                                         return cmp_fn.cmp_string(s1, s2);
                                     }
                                 }
@@ -57,7 +64,7 @@ impl<'a> ExprTerm<'a> {
                             Value::Number(n1) => cmp_fn.cmp_f64(to_f64(n1), to_f64(n2)),
                             Value::Object(map1) => {
                                 if let Some(FilterKey::String(k)) = fk1 {
-                                    if let Some(Value::Number(n1)) = map1.get(k) {
+                                    if let Some(Value::Number(n1)) = map1.get(k.as_str()) {
                                         return cmp_fn.cmp_f64(to_f64(n1), to_f64(n2));
                                     }
                                 }
@@ -73,7 +80,7 @@ impl<'a> ExprTerm<'a> {
                             Value::Bool(b1) => cmp_fn.cmp_bool(*b1, *b2),
                             Value::Object(map1) => {
                                 if let Some(FilterKey::String(k)) = fk1 {
-                                    if let Some(Value::Bool(b1)) = map1.get(k) {
+                                    if let Some(Value::Bool(b1)) = map1.get(k.as_str()) {
                                         return cmp_fn.cmp_bool(*b1, *b2);
                                     }
                                 }
@@ -98,15 +105,15 @@ impl<'a> ExprTerm<'a> {
                     ExprTerm::Bool(cmp_fn.default())
                 } else if let Some(rel) = rel {
                     if let ExprTerm::Json(_, _, _) = &other {
-                        ExprTerm::Json(Some(rel.to_vec()), None, ret)
+                        ExprTerm::Json(Some(rel.clone()), None, ret)
                     } else {
-                        let mut tmp = Vec::new();
+                        let mut tmp = Vector::new();
                         for rel_value in rel {
                             if let Value::Object(map) = rel_value {
                                 for map_value in map.values() {
                                     for result_value in &ret {
                                         if map_value.eq(*result_value) {
-                                            tmp.push(*rel_value);
+                                            tmp.push_back(*rel_value);
                                         }
                                     }
                                 }
@@ -186,8 +193,8 @@ impl<'a> ExprTerm<'a> {
     }
 }
 
-impl<'a> From<&Vec<&'a Value>> for ExprTerm<'a> {
-    fn from(vec: &Vec<&'a Value>) -> Self {
+impl<'a> From<&Vector<&'a Value>> for ExprTerm<'a> {
+    fn from(vec: &Vector<&'a Value>) -> Self {
         if vec.len() == 1 {
             match &vec[0] {
                 Value::Number(v) => return ExprTerm::Number(v.clone()),
@@ -197,29 +204,29 @@ impl<'a> From<&Vec<&'a Value>> for ExprTerm<'a> {
             }
         }
 
-        ExprTerm::Json(None, None, vec.to_vec())
+        ExprTerm::Json(None, None, vec.clone())
     }
 }
 
 // #[cfg(test)]
 // mod expr_term_inner_tests {
-//     use serde_json::{Number, Value};
+//     use imbl_value::{Number, Value};
 //     use select::expr_term::ExprTerm;
 //
 //     #[test]
 //     fn value_vec_into() {
 //         let v = Value::Bool(true);
-//         let vec = &vec![&v];
+//         let vec = &vector![&v];
 //         let term: ExprTerm = vec.into();
 //         assert_eq!(term, ExprTerm::Bool(true));
 //
 //         let v = Value::String("a".to_string());
-//         let vec = &vec![&v];
+//         let vec = &vector![&v];
 //         let term: ExprTerm = vec.into();
 //         assert_eq!(term, ExprTerm::String("a".to_string()));
 //
-//         let v = serde_json::from_str("1.0").unwrap();
-//         let vec = &vec![&v];
+//         let v = imbl_value::from_str("1.0").unwrap();
+//         let vec = &vector![&v];
 //         let term: ExprTerm = vec.into();
 //         assert_eq!(term, ExprTerm::Number(Number::from_f64(1.0).unwrap()));
 //     }

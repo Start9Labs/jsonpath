@@ -3,7 +3,10 @@
 //! # Example
 //! ```
 //! extern crate jsonpath_lib as jsonpath;
-//! #[macro_use] extern crate serde_json;
+//! #[macro_use] extern crate imbl_value;
+//!
+//! use imbl_value::imbl::vector;
+//!
 //! let json_obj = json!({
 //!     "store": {
 //!         "book": [
@@ -45,91 +48,63 @@
 //! let mut selector = jsonpath::selector(&json_obj);
 //!
 //! assert_eq!(selector("$.store.book[*].author").unwrap(),
-//!             vec![
-//!                 "Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"
+//!             vector![
+//!                 &json_obj["store"]["book"][0]["author"],
+//!                 &json_obj["store"]["book"][1]["author"],
+//!                 &json_obj["store"]["book"][2]["author"],
+//!                 &json_obj["store"]["book"][3]["author"]
 //!             ]);
 //!
 //! assert_eq!(selector("$..author").unwrap(),
-//!             vec![
-//!                 "Nigel Rees", "Evelyn Waugh", "Herman Melville", "J. R. R. Tolkien"
+//!             vector![
+//!                 &json_obj["store"]["book"][0]["author"],
+//!                 &json_obj["store"]["book"][1]["author"],
+//!                 &json_obj["store"]["book"][2]["author"],
+//!                 &json_obj["store"]["book"][3]["author"]
 //!             ]);
 //!
 //! assert_eq!(selector("$.store.*").unwrap(),
-//!             vec![
-//!                 &json!([
-//!                     { "category": "reference", "author": "Nigel Rees", "title": "Sayings of the Century", "price": 8.95 },
-//!                     { "category": "fiction", "author": "Evelyn Waugh", "title": "Sword of Honour", "price": 12.99 },
-//!                     { "category": "fiction", "author": "Herman Melville", "title": "Moby Dick", "isbn": "0-553-21311-3", "price": 8.99 },
-//!                     { "category": "fiction", "author": "J. R. R. Tolkien", "title": "The Lord of the Rings", "isbn": "0-395-19395-8", "price": 22.99 }
-//!                 ]),
-//!                 &json!({ "color": "red", "price": 19.95 })
-//!             ]);
+//!             vector![&json_obj["store"]["book"], &json_obj["store"]["bicycle"]]);
 //!
 //! assert_eq!(selector("$.store..price").unwrap(),
-//!             vec![
-//!                 8.95, 12.99, 8.99, 22.99, 19.95
+//!             vector![
+//!                 &json_obj["store"]["book"][0]["price"],
+//!                 &json_obj["store"]["book"][1]["price"],
+//!                 &json_obj["store"]["book"][2]["price"],
+//!                 &json_obj["store"]["book"][3]["price"],
+//!                 &json_obj["store"]["bicycle"]["price"]
 //!             ]);
 //!
 //! assert_eq!(selector("$..book[2]").unwrap(),
-//!             vec![
-//!                 &json!({
-//!                     "category" : "fiction",
-//!                     "author" : "Herman Melville",
-//!                     "title" : "Moby Dick",
-//!                     "isbn" : "0-553-21311-3",
-//!                     "price" : 8.99
-//!                 })
-//!             ]);
+//!             vector![&json_obj["store"]["book"][2]]);
 //!
 //! assert_eq!(selector("$..book[-2]").unwrap(),
-//!             vec![
-//!                 &json!({
-//!                     "category" : "fiction",
-//!                     "author" : "Herman Melville",
-//!                     "title" : "Moby Dick",
-//!                     "isbn" : "0-553-21311-3",
-//!                     "price" : 8.99
-//!                 })
-//!             ]);
+//!             vector![&json_obj["store"]["book"][2]]);
 //!
 //! assert_eq!(selector("$..book[0,1]").unwrap(),
-//!             vec![
-//!                 &json!({"category" : "reference","author" : "Nigel Rees","title" : "Sayings of the Century","price" : 8.95}),
-//!                 &json!({"category" : "fiction","author" : "Evelyn Waugh","title" : "Sword of Honour","price" : 12.99})
-//!             ]);
+//!             vector![&json_obj["store"]["book"][0], &json_obj["store"]["book"][1]]);
 //!
 //! assert_eq!(selector("$..book[:2]").unwrap(),
-//!             vec![
-//!                 &json!({"category" : "reference","author" : "Nigel Rees","title" : "Sayings of the Century","price" : 8.95}),
-//!                 &json!({"category" : "fiction","author" : "Evelyn Waugh","title" : "Sword of Honour","price" : 12.99})
-//!             ]);
+//!             vector![&json_obj["store"]["book"][0], &json_obj["store"]["book"][1]]);
 //!
 //! assert_eq!(selector("$..book[:2]").unwrap(),
-//!             vec![
-//!                 &json!({"category" : "reference","author" : "Nigel Rees","title" : "Sayings of the Century","price" : 8.95}),
-//!                 &json!({"category" : "fiction","author" : "Evelyn Waugh","title" : "Sword of Honour","price" : 12.99})
-//!             ]);
+//!             vector![&json_obj["store"]["book"][0], &json_obj["store"]["book"][1]]);
 //!
 //! assert_eq!(selector("$..book[?(@.isbn)]").unwrap(),
-//!             vec![
-//!                 &json!({"category" : "fiction","author" : "Herman Melville","title" : "Moby Dick","isbn" : "0-553-21311-3","price" : 8.99}),
-//!                 &json!({"category" : "fiction","author" : "J. R. R. Tolkien","title" : "The Lord of the Rings","isbn" : "0-395-19395-8","price" : 22.99})
-//!             ]);
+//!             vector![&json_obj["store"]["book"][2], &json_obj["store"]["book"][3]]);
 //!
 //! assert_eq!(selector("$.store.book[?(@.price < 10)]").unwrap(),
-//!             vec![
-//!                 &json!({"category" : "reference","author" : "Nigel Rees","title" : "Sayings of the Century","price" : 8.95}),
-//!                 &json!({"category" : "fiction","author" : "Herman Melville","title" : "Moby Dick","isbn" : "0-553-21311-3","price" : 8.99})
-//!             ]);
+//!             vector![&json_obj["store"]["book"][0], &json_obj["store"]["book"][2]]);
 //! ```
 extern crate core;
 #[macro_use]
 extern crate log;
+extern crate imbl_value;
 extern crate serde;
-extern crate serde_json;
 
-use serde_json::Value;
+use imbl_value::Value;
 
+use imbl_value::imbl::Vector;
 #[allow(deprecated)]
 use parser::Node;
 #[allow(deprecated)]
@@ -137,20 +112,17 @@ pub use parser::Parser;
 #[allow(deprecated)]
 pub use select::{Selector, SelectorMut};
 
-#[deprecated(
-since = "0.4.0",
-note = "It will be move to common module. since 0.5"
-)]
+#[deprecated(since = "0.4.0", note = "It will be move to common module. since 0.5")]
 pub use select::JsonPathError;
 
-pub use selector::{JsonSelector, JsonSelectorMut};
 pub use paths::PathParser;
+pub use selector::{JsonSelector, JsonSelectorMut};
 use std::rc::Rc;
 
 #[doc(hidden)]
 #[deprecated(
-since = "0.4.0",
-note = "'ffi' is moved to another location like 'wasm' from version 0.5.x"
+    since = "0.4.0",
+    note = "'ffi' is moved to another location like 'wasm' from version 0.5.x"
 )]
 mod ffi;
 #[doc(hidden)]
@@ -165,7 +137,9 @@ impl From<&paths::TokenError> for JsonPathError {
     fn from(e: &paths::TokenError) -> Self {
         match e {
             paths::TokenError::Eof => JsonPathError::Path("Eof".to_string()),
-            paths::TokenError::Position(pos) => JsonPathError::Path(["Position:", &pos.to_string()].concat())
+            paths::TokenError::Position(pos) => {
+                JsonPathError::Path(["Position:", &pos.to_string()].concat())
+            }
         }
     }
 }
@@ -174,9 +148,11 @@ impl From<&paths::TokenError> for JsonPathError {
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
 ///
-/// let mut first_firend = jsonpath::compile("$..friends[0]");
+/// use imbl_value::imbl::vector;
+///
+/// let mut first_friend = jsonpath::compile("$..friends[0]");
 ///
 /// let json_obj = json!({
 ///     "school": {
@@ -190,18 +166,18 @@ impl From<&paths::TokenError> for JsonPathError {
 ///         {"name": "친구4"}
 /// ]});
 ///
-/// let json = first_firend(&json_obj).unwrap();
+/// let json = first_friend(&json_obj).unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구3", "age": 30}),
-///     &json!({"name": "친구1", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][0],
+///     &json_obj["school"]["friends"][0]
 /// ]);
 /// ```
 #[deprecated(
-since = "0.2.5",
-note = "Please use the PathCompiled::compile function instead. It will be removed from 0.4.1"
+    since = "0.2.5",
+    note = "Please use the PathCompiled::compile function instead. It will be removed from 0.4.1"
 )]
-pub fn compile(path: &str) -> impl FnMut(&Value) -> Result<Vec<&Value>, JsonPathError> {
+pub fn compile(path: &str) -> impl FnMut(&Value) -> Result<Vector<&Value>, JsonPathError> {
     #[allow(deprecated)]
     let node = parser::Parser::compile(path);
     move |json| match &node {
@@ -218,7 +194,9 @@ pub fn compile(path: &str) -> impl FnMut(&Value) -> Result<Vec<&Value>, JsonPath
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
+///
+/// use imbl_value::imbl::vector;
 ///
 /// let json_obj = json!({
 ///     "school": {
@@ -236,24 +214,30 @@ pub fn compile(path: &str) -> impl FnMut(&Value) -> Result<Vec<&Value>, JsonPath
 ///
 /// let json = selector("$..friends[0]").unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구3", "age": 30}),
-///     &json!({"name": "친구1", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][0],
+///     &json_obj["school"]["friends"][0]
 /// ]);
 ///
 /// let json = selector("$..friends[1]").unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구4"}),
-///     &json!({"name": "친구2", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][1],
+///     &json_obj["school"]["friends"][1]
 /// ]);
 /// ```
 #[allow(clippy::needless_lifetimes)]
-pub fn selector<'a>(json: &'a Value) -> impl FnMut(&'a str) -> Result<Vec<&'a Value>, JsonPathError> {
+pub fn selector<'a>(
+    json: &'a Value,
+) -> impl FnMut(&'a str) -> Result<Vector<&'a Value>, JsonPathError> {
     let mut selector = JsonSelector::default();
     move |path| {
         let parser = PathParser::compile(path).map_err(|e| JsonPathError::from(&e))?;
-        selector.reset_parser(parser).value(json).reset_value().select()
+        selector
+            .reset_parser(parser)
+            .value(json)
+            .reset_value()
+            .select()
     }
 }
 
@@ -262,7 +246,7 @@ pub fn selector<'a>(json: &'a Value) -> impl FnMut(&'a str) -> Result<Vec<&'a Va
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
 /// extern crate serde;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
 ///
 /// use serde::{Deserialize, Serialize};
 ///
@@ -288,24 +272,24 @@ pub fn selector<'a>(json: &'a Value) -> impl FnMut(&'a str) -> Result<Vec<&'a Va
 ///
 /// let json = selector("$..friends[0]").unwrap();
 ///
-/// let ret = vec!(
+/// let ret = vec![
 ///     Friend { name: "친구3".to_string(), age: Some(30) },
 ///     Friend { name: "친구1".to_string(), age: Some(20) }
-/// );
+/// ];
 /// assert_eq!(json, ret);
 ///
 /// let json = selector("$..friends[1]").unwrap();
 ///
-/// let ret = vec!(
+/// let ret = vec![
 ///     Friend { name: "친구4".to_string(), age: None },
 ///     Friend { name: "친구2".to_string(), age: Some(20) }
-/// );
+/// ];
 ///
 /// assert_eq!(json, ret);
 /// ```
-pub fn selector_as<'a, T: serde::de::DeserializeOwned>(json: &'a Value)
-                                                   -> impl FnMut(&'a str) -> Result<Vec<T>, JsonPathError> + '_
-{
+pub fn selector_as<'a, T: serde::de::DeserializeOwned>(
+    json: &'a Value,
+) -> impl FnMut(&'a str) -> Result<Vec<T>, JsonPathError> + '_ {
     let mut selector = JsonSelector::default();
     let _ = selector.value(json);
     move |path: &str| {
@@ -318,7 +302,9 @@ pub fn selector_as<'a, T: serde::de::DeserializeOwned>(json: &'a Value)
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
+///
+/// use imbl_value::imbl::vector;
 ///
 /// let json_obj = json!({
 ///     "school": {
@@ -334,12 +320,12 @@ pub fn selector_as<'a, T: serde::de::DeserializeOwned>(json: &'a Value)
 ///
 /// let json = jsonpath::select(&json_obj, "$..friends[0]").unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구3", "age": 30}),
-///     &json!({"name": "친구1", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][0],
+///     &json_obj["school"]["friends"][0]
 /// ]);
 /// ```
-pub fn select<'a>(json: &'a Value, path: &'a str) -> Result<Vec<&'a Value>, JsonPathError> {
+pub fn select<'a>(json: &'a Value, path: &'a str) -> Result<Vector<&'a Value>, JsonPathError> {
     let parser = PathParser::compile(path).map_err(|e| JsonPathError::from(&e))?;
     JsonSelector::new(parser).value(json).select()
 }
@@ -348,7 +334,9 @@ pub fn select<'a>(json: &'a Value, path: &'a str) -> Result<Vec<&'a Value>, Json
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
+///
+/// use imbl_value::imbl::vector;
 ///
 /// let ret = jsonpath::select_as_str(r#"
 /// {
@@ -379,7 +367,7 @@ pub fn select_as_str(json_str: &str, path: &str) -> Result<String, JsonPathError
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
 /// extern crate serde;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
 ///
 /// use serde::{Deserialize, Serialize};
 ///
@@ -418,14 +406,15 @@ pub fn select_as<T: serde::de::DeserializeOwned>(
 ) -> Result<Vec<T>, JsonPathError> {
     let json = serde_json::from_str(json_str).map_err(|e| JsonPathError::Serde(e.to_string()))?;
     let parser = PathParser::compile(path).map_err(|e| JsonPathError::from(&e))?;
-    JsonSelector::new(parser).value(&json).select_as()
+    let mut s = JsonSelector::new(parser);
+    s.value(&json).select_as()
 }
 
 /// Delete(= replace with null) the JSON property using the jsonpath.
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
 ///
 /// let json_obj = json!({
 ///     "school": {
@@ -464,9 +453,9 @@ pub fn delete(value: Value, path: &str) -> Result<Value, JsonPathError> {
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
 ///
-/// use serde_json::Value;
+/// use imbl_value::Value;
 ///
 /// let json_obj = json!({
 ///     "school": {
@@ -503,8 +492,8 @@ pub fn delete(value: Value, path: &str) -> Result<Value, JsonPathError> {
 /// ]}));
 /// ```
 pub fn replace_with<F>(value: Value, path: &str, fun: &mut F) -> Result<Value, JsonPathError>
-    where
-        F: FnMut(Value) -> Option<Value>,
+where
+    F: FnMut(Value) -> Option<Value>,
 {
     let parser = PathParser::compile(path).map_err(|e| JsonPathError::from(&e))?;
     let mut selector = JsonSelectorMut::new(parser);
@@ -520,7 +509,9 @@ pub fn replace_with<F>(value: Value, path: &str, fun: &mut F) -> Result<Value, J
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
+///
+/// use imbl_value::imbl::vector;
 ///
 /// let mut first_friend = jsonpath::Compiled::compile("$..friends[0]").unwrap();
 ///
@@ -540,25 +531,22 @@ pub fn replace_with<F>(value: Value, path: &str, fun: &mut F) -> Result<Value, J
 ///
 /// let json = first_friend.select(&json_obj).unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구3", "age": 30}),
-///     &json!({"name": "친구1", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][0],
+///     &json_obj["school"]["friends"][0]
 /// ]);
 ///
 /// // call a second time
 ///
 /// let json = first_friend.select(&json_obj).unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구3", "age": 30}),
-///     &json!({"name": "친구1", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][0],
+///     &json_obj["school"]["friends"][0]
 /// ]);
 /// ```
 #[derive(Clone, Debug)]
-#[deprecated(
-since = "0.4.0",
-note = "Please use PathCompiled."
-)]
+#[deprecated(since = "0.4.0", note = "Please use PathCompiled.")]
 pub struct Compiled {
     #[allow(deprecated)]
     node: Node,
@@ -571,13 +559,11 @@ impl Compiled {
     /// If parsing the path fails, it will return an error.
     pub fn compile(path: &str) -> Result<Self, String> {
         let node = parser::Parser::compile(path)?;
-        Ok(Self {
-            node
-        })
+        Ok(Self { node })
     }
 
     /// Execute the select operation on the pre-compiled path.
-    pub fn select<'a>(&self, value: &'a Value) -> Result<Vec<&'a Value>, JsonPathError> {
+    pub fn select<'a>(&self, value: &'a Value) -> Result<Vector<&'a Value>, JsonPathError> {
         let mut selector = Selector::default();
         selector.compiled_path(&self.node).value(value).select()
     }
@@ -591,7 +577,9 @@ impl Compiled {
 ///
 /// ```rust
 /// extern crate jsonpath_lib as jsonpath;
-/// #[macro_use] extern crate serde_json;
+/// #[macro_use] extern crate imbl_value;
+///
+/// use imbl_value::imbl::vector;
 ///
 /// let mut first_friend = jsonpath::PathCompiled::compile("$..friends[0]").unwrap();
 ///
@@ -611,18 +599,18 @@ impl Compiled {
 ///
 /// let json = first_friend.select(&json_obj).unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구3", "age": 30}),
-///     &json!({"name": "친구1", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][0],
+///     &json_obj["school"]["friends"][0]
 /// ]);
 ///
 /// // call a second time
 ///
 /// let json = first_friend.select(&json_obj).unwrap();
 ///
-/// assert_eq!(json, vec![
-///     &json!({"name": "친구3", "age": 30}),
-///     &json!({"name": "친구1", "age": 20})
+/// assert_eq!(json, vector![
+///     &json_obj["friends"][0],
+///     &json_obj["school"]["friends"][0]
 /// ]);
 /// ```
 #[derive(Clone, Debug)]
@@ -637,12 +625,12 @@ impl<'a> PathCompiled<'a> {
     pub fn compile(path: &str) -> Result<PathCompiled, JsonPathError> {
         let parser = PathParser::compile(path).map_err(|e| JsonPathError::from(&e))?;
         Ok(PathCompiled {
-            parser: Rc::new(parser)
+            parser: Rc::new(parser),
         })
     }
 
     /// Execute the select operation on the pre-compiled path.
-    pub fn select(&self, value: &'a Value) -> Result<Vec<&'a Value>, JsonPathError> {
+    pub fn select(&self, value: &'a Value) -> Result<Vector<&'a Value>, JsonPathError> {
         let mut selector = JsonSelector::new_ref(Rc::clone(&self.parser));
         selector.value(value).select()
     }

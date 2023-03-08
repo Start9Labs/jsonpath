@@ -1,4 +1,5 @@
 #[macro_use]
+extern crate imbl_value;
 extern crate serde_json;
 
 use common::{read_json, select_and_then_compare, setup};
@@ -256,9 +257,5 @@ fn bugs40_bracket_notation_after_recursive_descent() {
 fn bugs50() {
     setup();
 
-    select_and_then_compare(
-        "$[0]",
-        json!({"f": [1,2,3]}),
-        json!([])
-    );
+    select_and_then_compare("$[0]", json!({"f": [1,2,3]}), json!([]));
 }

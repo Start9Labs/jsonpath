@@ -1,4 +1,5 @@
 #[macro_use]
+extern crate imbl_value;
 extern crate serde_json;
 
 use common::{read_json, select_and_then_compare, setup};

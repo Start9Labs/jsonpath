@@ -13,8 +13,8 @@ mod utils {
     use std::str::FromStr;
 
     pub fn string_to_num<F, S: FromStr>(string: &str, msg_handler: F) -> Result<S, String>
-        where
-            F: Fn() -> String,
+    where
+        F: Fn() -> String,
     {
         match string.parse() {
             Ok(n) => Ok(n),
@@ -481,14 +481,15 @@ impl Parser {
         let node = Self::term(tokenizer)?;
         Self::eat_whitespace(tokenizer);
 
-        if matches!(tokenizer.peek_token(),
+        if matches!(
+            tokenizer.peek_token(),
             Ok(Token::Equal(_))
-            | Ok(Token::NotEqual(_))
-            | Ok(Token::Little(_))
-            | Ok(Token::LittleOrEqual(_))
-            | Ok(Token::Greater(_))
-            | Ok(Token::GreaterOrEqual(_)))
-        {
+                | Ok(Token::NotEqual(_))
+                | Ok(Token::Little(_))
+                | Ok(Token::LittleOrEqual(_))
+                | Ok(Token::Greater(_))
+                | Ok(Token::GreaterOrEqual(_))
+        ) {
             Self::op(node, tokenizer)
         } else if has_prop_candidate {
             Ok(node)
@@ -543,21 +544,15 @@ impl Parser {
                     _ => Self::paths(node, tokenizer),
                 }
             }
-            Ok(Token::Absolute(_)) => {
-                Self::json_path(tokenizer)
-            }
+            Ok(Token::Absolute(_)) => Self::json_path(tokenizer),
             Ok(Token::DoubleQuoted(_, _)) | Ok(Token::SingleQuoted(_, _)) => {
                 Self::array_quote_value(tokenizer)
             }
-            Ok(Token::Key(_, key)) => {
-                match key.as_bytes()[0] {
-                    b'-' | b'0'..=b'9' => Self::term_num(tokenizer),
-                    _ => Self::boolean(tokenizer),
-                }
-            }
-            _ => {
-                Err(tokenizer.err_msg())
-            }
+            Ok(Token::Key(_, key)) => match key.as_bytes()[0] {
+                b'-' | b'0'..=b'9' => Self::term_num(tokenizer),
+                _ => Self::boolean(tokenizer),
+            },
+            _ => Err(tokenizer.err_msg()),
         }
     }
 
@@ -690,18 +685,18 @@ pub trait NodeVisitor {
 //
 //     struct NodeVisitorTestImpl<'a> {
 //         input: &'a str,
-//         stack: Vec<ParseToken>,
+//         stack: Vector<ParseToken>,
 //     }
 //
 //     impl<'a> NodeVisitorTestImpl<'a> {
 //         fn new(input: &'a str) -> Self {
 //             NodeVisitorTestImpl {
 //                 input,
-//                 stack: Vec::new(),
+//                 stack: Vector::new(),
 //             }
 //         }
 //
-//         fn start(&mut self) -> Result<Vec<ParseToken>, String> {
+//         fn start(&mut self) -> Result<Vector<ParseToken>, String> {
 //             let node = Parser::compile(self.input)?;
 //             self.visit(&node);
 //             Ok(self.stack.split_off(0))
@@ -710,7 +705,7 @@ pub trait NodeVisitor {
 //
 //     impl<'a> NodeVisitor for NodeVisitorTestImpl<'a> {
 //         fn visit_token(&mut self, token: &ParseToken) {
-//             self.stack.push(token.clone());
+//             self.stack.push_back(token.clone());
 //         }
 //     }
 //
@@ -718,7 +713,7 @@ pub trait NodeVisitor {
 //         let _ = env_logger::try_init();
 //     }
 //
-//     fn run(input: &str) -> Result<Vec<ParseToken>, String> {
+//     fn run(input: &str) -> Result<Vector<ParseToken>, String> {
 //         let mut interpreter = NodeVisitorTestImpl::new(input);
 //         interpreter.start()
 //     }
@@ -757,7 +752,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.aa"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("aa".to_owned())
@@ -766,7 +761,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.00.a"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("00".to_owned()),
@@ -777,7 +772,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.00.韓창.seok"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("00".to_owned()),
@@ -790,12 +785,12 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.*"),
-//             Ok(vec![ParseToken::Absolute, ParseToken::In, ParseToken::All])
+//             Ok(vector![ParseToken::Absolute, ParseToken::In, ParseToken::All])
 //         );
 //
 //         assert_eq!(
 //             run("$..*"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Leaves,
 //                 ParseToken::All
@@ -804,7 +799,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$..[0]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Leaves,
 //                 ParseToken::Array,
@@ -815,7 +810,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.$a"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("$a".to_owned())
@@ -824,7 +819,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.['$a']"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Key("$a".to_owned()),
@@ -851,7 +846,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.book[?(@.isbn)]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("book".to_string()),
@@ -868,7 +863,7 @@ pub trait NodeVisitor {
 //         //
 //         assert_eq!(
 //             run("$.[*]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::All,
@@ -878,7 +873,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[*]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -890,7 +885,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[*].가"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -904,7 +899,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[0][1]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -919,19 +914,19 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[1,2]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
 //                 ParseToken::Array,
-//                 ParseToken::Union(vec![1, 2]),
+//                 ParseToken::Union(vector![1, 2]),
 //                 ParseToken::ArrayEof
 //             ])
 //         );
 //
 //         assert_eq!(
 //             run("$.a[10:]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -943,7 +938,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[:11]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -955,7 +950,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[-12:13]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -967,7 +962,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$[0:3:2]"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Range(Some(0), Some(3), Some(2)),
@@ -977,7 +972,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$[:3:2]"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Range(None, Some(3), Some(2)),
@@ -987,7 +982,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$[:]"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Range(None, None, None),
@@ -997,7 +992,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$[::]"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Range(None, None, None),
@@ -1007,7 +1002,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$[::2]"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Range(None, None, Some(2)),
@@ -1017,17 +1012,17 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$["a", 'b']"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
-//                 ParseToken::Keys(vec!["a".to_string(), "b".to_string()]),
+//                 ParseToken::Keys(vector!["a".to_string(), "b".to_string()]),
 //                 ParseToken::ArrayEof
 //             ])
 //         );
 //
 //         assert_eq!(
 //             run("$.a[?(1>2)]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -1041,7 +1036,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[?($.b>3)]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_owned()),
@@ -1057,7 +1052,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$[?($.c>@.d && 1==2)]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Absolute,
@@ -1077,7 +1072,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$[?($.c>@.d&&(1==2||3>=4))]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Absolute,
@@ -1101,7 +1096,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$[?(@.a<@.b)]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Relative,
@@ -1117,7 +1112,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$[*][*][*]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::All,
@@ -1133,7 +1128,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$['a']['bb']"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Key("a".to_string()),
@@ -1146,7 +1141,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$.a[?(@.e==true)]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::In,
 //                 ParseToken::Key("a".to_string()),
@@ -1162,7 +1157,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$[?(@ > 1)]"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Relative,
@@ -1174,7 +1169,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$[:]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Range(None, None, None),
@@ -1184,7 +1179,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$['single\'quote']"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Key("single'quote".to_string()),
@@ -1194,7 +1189,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run(r#"$["single\"quote"]"#),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Key(r#"single"quote"#.to_string()),
@@ -1209,7 +1204,7 @@ pub trait NodeVisitor {
 //
 //         assert_eq!(
 //             run("$[?(1.1<2.1)]"),
-//             Ok(vec![
+//             Ok(vector![
 //                 ParseToken::Absolute,
 //                 ParseToken::Array,
 //                 ParseToken::Number(1.1),
@@ -1245,18 +1240,18 @@ pub trait NodeVisitor {
 //         let _ = env_logger::try_init();
 //     }
 //
-//     fn collect_token(input: &str) -> (Vec<Token>, Option<TokenError>) {
+//     fn collect_token(input: &str) -> (Vector<Token>, Option<TokenError>) {
 //         let mut tokenizer = Tokenizer::new(input);
-//         let mut vec = vec![];
+//         let mut vec = vector![];
 //         loop {
 //             match tokenizer.next_token() {
-//                 Ok(t) => vec.push(t),
+//                 Ok(t) => vec.push_back(t),
 //                 Err(e) => return (vec, Some(e)),
 //             }
 //         }
 //     }
 //
-//     fn run(input: &str, expected: (Vec<Token>, Option<TokenError>)) {
+//     fn run(input: &str, expected: (Vector<Token>, Option<TokenError>)) {
 //         let (vec, err) = collect_token(input);
 //         assert_eq!((vec, err), expected, "\"{}\"", input);
 //     }
@@ -1292,7 +1287,7 @@ pub trait NodeVisitor {
 //         run(
 //             "$.01.a",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::Dot(1),
 //                     Token::Key(2, "01".to_string()),
@@ -1306,7 +1301,7 @@ pub trait NodeVisitor {
 //         run(
 //             "$.   []",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::Dot(1),
 //                     Token::Whitespace(2, 2),
@@ -1320,7 +1315,7 @@ pub trait NodeVisitor {
 //         run(
 //             "$..",
 //             (
-//                 vec![Token::Absolute(0), Token::Dot(1), Token::Dot(2)],
+//                 vector![Token::Absolute(0), Token::Dot(1), Token::Dot(2)],
 //                 Some(TokenError::Eof),
 //             ),
 //         );
@@ -1328,7 +1323,7 @@ pub trait NodeVisitor {
 //         run(
 //             "$..ab",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::Dot(1),
 //                     Token::Dot(2),
@@ -1341,7 +1336,7 @@ pub trait NodeVisitor {
 //         run(
 //             "$..가 [",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::Dot(1),
 //                     Token::Dot(2),
@@ -1356,7 +1351,7 @@ pub trait NodeVisitor {
 //         run(
 //             "[-1, 2 ]",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::OpenArray(0),
 //                     Token::Key(1, "-1".to_string()),
 //                     Token::Comma(3),
@@ -1372,7 +1367,7 @@ pub trait NodeVisitor {
 //         run(
 //             "[ 1 2 , 3 \"abc\" : -10 ]",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::OpenArray(0),
 //                     Token::Whitespace(1, 0),
 //                     Token::Key(2, "1".to_string()),
@@ -1398,7 +1393,7 @@ pub trait NodeVisitor {
 //         run(
 //             "?(@.a가 <41.01)",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Question(0),
 //                     Token::OpenParenthesis(1),
 //                     Token::At(2),
@@ -1418,7 +1413,7 @@ pub trait NodeVisitor {
 //         run(
 //             "?(@.a <4a.01)",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Question(0),
 //                     Token::OpenParenthesis(1),
 //                     Token::At(2),
@@ -1438,7 +1433,7 @@ pub trait NodeVisitor {
 //         run(
 //             "?($.c>@.d)",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Question(0),
 //                     Token::OpenParenthesis(1),
 //                     Token::Absolute(2),
@@ -1457,7 +1452,7 @@ pub trait NodeVisitor {
 //         run(
 //             "$[:]",
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::OpenArray(1),
 //                     Token::Split(2),
@@ -1470,7 +1465,7 @@ pub trait NodeVisitor {
 //         run(
 //             r#"$['single\'quote']"#,
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::OpenArray(1),
 //                     Token::SingleQuoted(2, "single\'quote".to_string()),
@@ -1483,7 +1478,7 @@ pub trait NodeVisitor {
 //         run(
 //             r#"$['single\'1','single\'2']"#,
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::OpenArray(1),
 //                     Token::SingleQuoted(2, "single\'1".to_string()),
@@ -1498,7 +1493,7 @@ pub trait NodeVisitor {
 //         run(
 //             r#"$["double\"quote"]"#,
 //             (
-//                 vec![
+//                 vector![
 //                     Token::Absolute(0),
 //                     Token::OpenArray(1),
 //                     Token::DoubleQuoted(2, "double\"quote".to_string()),

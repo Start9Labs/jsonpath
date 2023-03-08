@@ -5,9 +5,12 @@
 ![npm](https://img.shields.io/npm/v/jsonpath-wasm.svg?label=npm%20%60jsonpath-wasm%60)
 ![Codecov](https://img.shields.io/codecov/c/github/freestrings/jsonpath.svg?token=92c41b4e7cf04a9cbebc08f68c5da615)
 
-`Rust` 버전 [JsonPath](https://goessner.net/articles/JsonPath/) 구현으로 `Webassembly`와 `Javascript`에서도 유사한 API 인터페이스를 제공 한다.
+`Rust` 버전 [JsonPath](https://goessner.net/articles/JsonPath/) 구현으로
+`Webassembly`와 `Javascript`에서도 유사한 API 인터페이스를 제공 한다.
 
-It is JsonPath [JsonPath](https://goessner.net/articles/JsonPath/) engine written in `Rust`. it provide a similar API interface in `Webassembly` and` Javascript` too.
+It is JsonPath [JsonPath](https://goessner.net/articles/JsonPath/) engine
+written in `Rust`. it provide a similar API interface in `Webassembly`
+and`Javascript` too.
 
 - [Webassembly Demo](https://freestrings.github.io/jsonpath/)
 - [NPM jsonpath-wasm - webassembly](https://www.npmjs.com/package/jsonpath-wasm)
@@ -52,13 +55,13 @@ let result = selector
     .value(&json_obj)
     .select().unwrap();
 
-assert_eq!(vec![&json!({"name": "친구3", "age": 30})], result);
+assert_eq!(vector![&json!({"name": "친구3", "age": 30})], result);
 
 let result = selector.select_as_str().unwrap();
 assert_eq!(r#"[{"name":"친구3","age":30}]"#, result);
 
 let result = selector.select_as::<Friend>().unwrap();
-assert_eq!(vec![Friend { name: "친구3".to_string(), age: Some(30) }], result);
+assert_eq!(vector![Friend { name: "친구3".to_string(), age: Some(30) }], result);
 ```
 
 </details>
@@ -109,7 +112,7 @@ assert_eq!(result, json!({
 
 </details>
 
-<details><summary><b>Rust - jsonpath::select(json: &serde_json::value::Value, jsonpath: &str)</b></summary>
+<details><summary><b>Rust - jsonpath::select(json: &imbl_value::value::Value, jsonpath: &str)</b></summary>
 
 ```rust
 let json_obj = json!({
@@ -126,14 +129,13 @@ let json_obj = json!({
 
 let json = jsonpath::select(&json_obj, "$..friends[0]").unwrap();
 
-assert_eq!(json, vec![
+assert_eq!(json, vector![
     &json!({"name": "친구3", "age": 30}),
     &json!({"name": "친구1", "age": 20})
 ]);
 ```
 
 </details>
-
 
 <details><summary><b>Rust - jsonpath::select_as_str(json_str: &str, jsonpath: &str)</b></summary>
 
@@ -165,10 +167,10 @@ assert_eq!(ret, r#"[{"name":"친구3","age":30},{"name":"친구1","age":20}]"#);
 struct Person {
     name: String,
     age: u8,
-    phones: Vec<String>,
+    phones: Vector<String>,
 }
 
-let ret: Vec<Person> = jsonpath::select_as(r#"
+let ret: Vector<Person> = jsonpath::select_as(r#"
 {
     "person":
         {
@@ -185,7 +187,7 @@ let ret: Vec<Person> = jsonpath::select_as(r#"
 let person = Person {
     name: "Doe John".to_string(),
     age: 44,
-    phones: vec!["+44 1234567".to_string(), "+44 2345678".to_string()],
+    phones: vector!["+44 1234567".to_string(), "+44 2345678".to_string()],
 };
 
 assert_eq!(ret[0], person);
@@ -212,7 +214,7 @@ let json_obj = json!({
 
 let json = template.select(&json_obj).unwrap();
 
-assert_eq!(json, vec![
+assert_eq!(json, vector![
     &json!({"name": "친구3", "age": 30}),
     &json!({"name": "친구1", "age": 20})
 ]);
@@ -220,7 +222,7 @@ assert_eq!(json, vec![
 
 </details>
 
-<details><summary><b>Rust - jsonpath::selector(json: &serde_json::value::Value)</b></summary>
+<details><summary><b>Rust - jsonpath::selector(json: &imbl_value::value::Value)</b></summary>
 
 ```rust
 let json_obj = json!({
@@ -239,14 +241,14 @@ let mut selector = jsonpath::selector(&json_obj);
 
 let json = selector("$..friends[0]").unwrap();
 
-assert_eq!(json, vec![
+assert_eq!(json, vector![
     &json!({"name": "친구3", "age": 30}),
     &json!({"name": "친구1", "age": 20})
 ]);
 
 let json = selector("$..friends[1]").unwrap();
 
-assert_eq!(json, vec![
+assert_eq!(json, vector![
     &json!({"name": "친구4"}),
     &json!({"name": "친구2", "age": 20})
 ]);
@@ -254,7 +256,7 @@ assert_eq!(json, vec![
 
 </details>
 
-<details><summary><b>Rust - jsonpath::selector_as&lt;T: serde::de::DeserializeOwned&gt;(json: &serde_json::value::Value)</b></summary>
+<details><summary><b>Rust - jsonpath::selector_as&lt;T: serde::de::DeserializeOwned&gt;(json: &imbl_value::value::Value)</b></summary>
 
 ```rust
 let json_obj = json!({
@@ -279,7 +281,7 @@ let mut selector = jsonpath::selector_as::<Friend>(&json_obj);
 
 let json = selector("$..friends[0]").unwrap();
 
-let ret = vec!(
+let ret = vector!(
     Friend { name: "친구3".to_string(), age: Some(30) },
     Friend { name: "친구1".to_string(), age: Some(20) }
 );
@@ -287,7 +289,7 @@ assert_eq!(json, ret);
 
 let json = selector("$..friends[1]").unwrap();
 
-let ret = vec!(
+let ret = vector!(
     Friend { name: "친구4".to_string(), age: None },
     Friend { name: "친구2".to_string(), age: Some(20) }
 );
@@ -383,35 +385,37 @@ Goto [`jsonpath-wasm` npmjs.org](https://www.npmjs.com/package/jsonpath-wasm)
 // browser
 import * as jsonpath from "jsonpath-wasm";
 // NodeJs
-const jsonpath = require('jsonpath-wasm');
+const jsonpath = require("jsonpath-wasm");
 ```
 
 ##### jsonpath-wasm
+
 `wasm-bindgen` 리턴 타입 제약 때문에 빌더 패턴은 지원하지 않는다.
 
-It does not support `builder-pattern` due to the `return type` restriction of `wasm-bindgen`.
+It does not support `builder-pattern` due to the `return type` restriction of
+`wasm-bindgen`.
 
 ```javascript
 let jsonObj = {
-    "school": {
-        "friends": [
-            {"name": "친구1", "age": 20},
-            {"name": "친구2", "age": 20}
-        ]
-    },
+  "school": {
     "friends": [
-        {"name": "친구3", "age": 30},
-        {"name": "친구4"}
-    ]
+      { "name": "친구1", "age": 20 },
+      { "name": "친구2", "age": 20 },
+    ],
+  },
+  "friends": [
+    { "name": "친구3", "age": 30 },
+    { "name": "친구4" },
+  ],
 };
 
 let ret = [
-    {"name": "친구3", "age": 30},
-    {"name": "친구1", "age": 20}
+  { "name": "친구3", "age": 30 },
+  { "name": "친구1", "age": 20 },
 ];
 
 let selector = new jsonpath.Selector();
-selector.path('$..friends[0]');
+selector.path("$..friends[0]");
 selector.value(jsonObj);
 
 let retObj = selector.select();
@@ -425,59 +429,59 @@ console.log(JSON.stringify(ret) == JSON.stringify(retObj));
 
 ```javascript
 let jsonObj = {
-    'school': {
-        'friends': [
-            {'name': '친구1', 'age': 20},
-            {'name': '친구2', 'age': 20},
-        ],
-    },
-    'friends': [
-        {'name': '친구3', 'age': 30},
-        {'name': '친구4'},
+  "school": {
+    "friends": [
+      { "name": "친구1", "age": 20 },
+      { "name": "친구2", "age": 20 },
     ],
+  },
+  "friends": [
+    { "name": "친구3", "age": 30 },
+    { "name": "친구4" },
+  ],
 };
 
 let selector = new jsonpath.SelectorMut();
-selector.path('$..[?(@.age == 20)]');
+selector.path("$..[?(@.age == 20)]");
 
 {
-    selector.value(jsonObj);
-    selector.deleteValue();
+  selector.value(jsonObj);
+  selector.deleteValue();
 
-    let resultObj = {
-        'school': {'friends': [null, null]},
-        'friends': [
-            {'name': '친구3', 'age': 30},
-            {'name': '친구4'},
-        ],
-    };
-    console.log(JSON.stringify(selector.take()) !== JSON.stringify(resultObj));
-    
-    // => true
+  let resultObj = {
+    "school": { "friends": [null, null] },
+    "friends": [
+      { "name": "친구3", "age": 30 },
+      { "name": "친구4" },
+    ],
+  };
+  console.log(JSON.stringify(selector.take()) !== JSON.stringify(resultObj));
+
+  // => true
 }
 
 {
-    selector.value(jsonObj);
-    selector.replaceWith((v) => {
-        v.age = v.age * 2;
-        return v;
-    });
+  selector.value(jsonObj);
+  selector.replaceWith((v) => {
+    v.age = v.age * 2;
+    return v;
+  });
 
-    let resultObj = {
-        'school': {
-            'friends': [
-                {'name': '친구1', 'age': 40},
-                {'name': '친구2', 'age': 40},
-            ],
-        },
-        'friends': [
-            {'name': '친구3', 'age': 30},
-            {'name': '친구4'},
-        ],
-    };
-    console.log(JSON.stringify(selector.take()) !== JSON.stringify(resultObj));
-    
-    // => true
+  let resultObj = {
+    "school": {
+      "friends": [
+        { "name": "친구1", "age": 40 },
+        { "name": "친구2", "age": 40 },
+      ],
+    },
+    "friends": [
+      { "name": "친구3", "age": 30 },
+      { "name": "친구4" },
+    ],
+  };
+  console.log(JSON.stringify(selector.take()) !== JSON.stringify(resultObj));
+
+  // => true
 }
 ```
 
@@ -487,30 +491,29 @@ selector.path('$..[?(@.age == 20)]');
 
 ```javascript
 let jsonObj = {
-    "school": {
-        "friends": [
-            {"name": "친구1", "age": 20},
-            {"name": "친구2", "age": 20}
-        ]
-    },
+  "school": {
     "friends": [
-        {"name": "친구3", "age": 30},
-        {"name": "친구4"}
-    ]
+      { "name": "친구1", "age": 20 },
+      { "name": "친구2", "age": 20 },
+    ],
+  },
+  "friends": [
+    { "name": "친구3", "age": 30 },
+    { "name": "친구4" },
+  ],
 };
 
 let ret = [
-    {"name": "친구3", "age": 30},
-    {"name": "친구1", "age": 20}
+  { "name": "친구3", "age": 30 },
+  { "name": "친구1", "age": 20 },
 ];
 
-
-let selectAsString = jsonpath.select(JSON.stringify(jsonObj), '$..friends[0]');
-let selectAsObj = jsonpath.select(jsonObj, '$..friends[0]');
+let selectAsString = jsonpath.select(JSON.stringify(jsonObj), "$..friends[0]");
+let selectAsObj = jsonpath.select(jsonObj, "$..friends[0]");
 
 console.log(
-    JSON.stringify(ret) == JSON.stringify(selectAsString),
-    JSON.stringify(ret) == JSON.stringify(selectAsObj)
+  JSON.stringify(ret) == JSON.stringify(selectAsString),
+  JSON.stringify(ret) == JSON.stringify(selectAsObj),
 );
 
 // => true, true
@@ -521,103 +524,103 @@ console.log(
 <details><summary><b>Javascript - jsonpath.compile(jsonpath: string)</b></summary>
 
 ```javascript
-let error = jsonpath.compile('');
+let error = jsonpath.compile("");
 console.log(typeof error, error); //string 'path error'
 
-let template = jsonpath.compile('$..friends[0]');
+let template = jsonpath.compile("$..friends[0]");
 
 let jsonObj = {
-    "school": {
-        "friends": [
-            {"name": "친구1", "age": 20},
-            {"name": "친구2", "age": 20}
-        ]
-    },
+  "school": {
     "friends": [
-        {"name": "친구3", "age": 30},
-        {"name": "친구4"}
-    ]
+      { "name": "친구1", "age": 20 },
+      { "name": "친구2", "age": 20 },
+    ],
+  },
+  "friends": [
+    { "name": "친구3", "age": 30 },
+    { "name": "친구4" },
+  ],
 };
 
 let ret = [
-    {"name": "친구3", "age": 30},
-    {"name": "친구1", "age": 20}
+  { "name": "친구3", "age": 30 },
+  { "name": "친구1", "age": 20 },
 ];
 
 let selectAsString = template(JSON.stringify(jsonObj));
 let selectAsObj = template(jsonObj);
 
 console.log(
-    JSON.stringify(ret) == JSON.stringify(selectAsString),
-    JSON.stringify(ret) == JSON.stringify(selectAsObj)
+  JSON.stringify(ret) == JSON.stringify(selectAsString),
+  JSON.stringify(ret) == JSON.stringify(selectAsObj),
 );
 
 // => true, true
 
 let jsonObj2 = {
-    "school": {
-        "friends": [
-            {"name": "Millicent Norman"},
-            {"name": "Vincent Cannon"}
-        ]
-    },
-    "friends": [ {"age": 30}, {"age": 40} ]
+  "school": {
+    "friends": [
+      { "name": "Millicent Norman" },
+      { "name": "Vincent Cannon" },
+    ],
+  },
+  "friends": [{ "age": 30 }, { "age": 40 }],
 };
 
 let ret2 = [
-    {"age": 30},
-    {"name": "Millicent Norman"}
+  { "age": 30 },
+  { "name": "Millicent Norman" },
 ];
 
 let selectAsString2 = template(JSON.stringify(jsonObj2));
 let selectAsObj2 = template(jsonObj2);
 
 console.log(
-        JSON.stringify(ret2) == JSON.stringify(selectAsString2),
-        JSON.stringify(ret2) == JSON.stringify(selectAsObj2)
+  JSON.stringify(ret2) == JSON.stringify(selectAsString2),
+  JSON.stringify(ret2) == JSON.stringify(selectAsObj2),
 );
 
 // => true, true
 ```
-    
+
 </details>
 
 <details><summary><b>Javascript - jsonpath.selector(json: string|object)</b></summary>
 
 ```javascript
 let jsonObj = {
-    "school": {
-        "friends": [
-            {"name": "친구1", "age": 20},
-            {"name": "친구2", "age": 20}
-        ]
-    },
+  "school": {
     "friends": [
-        {"name": "친구3", "age": 30},
-        {"name": "친구4"}
-    ]
+      { "name": "친구1", "age": 20 },
+      { "name": "친구2", "age": 20 },
+    ],
+  },
+  "friends": [
+    { "name": "친구3", "age": 30 },
+    { "name": "친구4" },
+  ],
 };
 
 let ret1 = [
-    {"name": "친구3", "age": 30},
-    {"name": "친구1", "age": 20}
+  { "name": "친구3", "age": 30 },
+  { "name": "친구1", "age": 20 },
 ];
 
 let ret2 = [
-    {"name": "친구4"},
-    {"name": "친구2", "age": 20}
+  { "name": "친구4" },
+  { "name": "친구2", "age": 20 },
 ];
 
 let selector = jsonpath.selector(jsonObj);
-// or as json string 
+// or as json string
 // let selector = jsonpath.selector(JSON.stringify(jsonObj));
 
-let select1 = selector('$..friends[0]');
-let select2 = selector('$..friends[1]');
+let select1 = selector("$..friends[0]");
+let select2 = selector("$..friends[1]");
 
 console.log(
-    JSON.stringify(ret1) == JSON.stringify(select1),
-    JSON.stringify(ret2) == JSON.stringify(select2)
+  JSON.stringify(ret1) == JSON.stringify(select1),
+  JSON.stringify(ret2) == JSON.stringify(select2),
 );
 
 // => true, true
@@ -629,28 +632,29 @@ console.log(
 
 ```javascript
 let jsonObj = {
-    "school": {
-        "friends": [
-            {"name": "친구1", "age": 20},
-            {"name": "친구2", "age": 20}
-        ]
-    },
+  "school": {
     "friends": [
-        {"name": "친구3", "age": 30},
-        {"name": "친구4"}
-    ]
+      { "name": "친구1", "age": 20 },
+      { "name": "친구2", "age": 20 },
+    ],
+  },
+  "friends": [
+    { "name": "친구3", "age": 30 },
+    { "name": "친구4" },
+  ],
 };
 
-let _1 = jsonpath.deleteValue(jsonObj, '$..friends[0]');
-let result = jsonpath.deleteValue(_1, '$..friends[1]');
+let _1 = jsonpath.deleteValue(jsonObj, "$..friends[0]");
+let result = jsonpath.deleteValue(_1, "$..friends[1]");
 
-console.log(JSON.stringify(result) !== JSON.stringify({
-    "school": { "friends": [null, null]},
-    "friends": [null, null]
-}));
+console.log(
+  JSON.stringify(result) !== JSON.stringify({
+    "school": { "friends": [null, null] },
+    "friends": [null, null],
+  }),
+);
 
 // => true
-
 ```
 
 </details>
@@ -659,38 +663,39 @@ console.log(JSON.stringify(result) !== JSON.stringify({
 
 ```javascript
 let jsonObj = {
-    "school": {
-        "friends": [
-            {"name": "친구1", "age": 20},
-            {"name": "친구2", "age": 20}
-        ]
-    },
+  "school": {
     "friends": [
-        {"name": "친구3", "age": 30},
-        {"name": "친구4"}
-    ]
+      { "name": "친구1", "age": 20 },
+      { "name": "친구2", "age": 20 },
+    ],
+  },
+  "friends": [
+    { "name": "친구3", "age": 30 },
+    { "name": "친구4" },
+  ],
 };
 
-let result = jsonpath.replaceWith(jsonObj, '$..friends[0]', (v) => {
-    v.age = v.age * 2;
-    return v;
+let result = jsonpath.replaceWith(jsonObj, "$..friends[0]", (v) => {
+  v.age = v.age * 2;
+  return v;
 });
 
-console.log(JSON.stringify(result) === JSON.stringify({
+console.log(
+  JSON.stringify(result) === JSON.stringify({
     "school": {
-        "friends": [
-            {"name": "친구1", "age": 40},
-            {"name": "친구2", "age": 20}
-        ]
+      "friends": [
+        { "name": "친구1", "age": 40 },
+        { "name": "친구2", "age": 20 },
+      ],
     },
     "friends": [
-        {"name": "친구3", "age": 60},
-        {"name": "친구4"}
-    ]
-}));
+      { "name": "친구3", "age": 60 },
+      { "name": "친구4" },
+    ],
+  }),
+);
 
 // => true
-
 ```
 
 </details>
